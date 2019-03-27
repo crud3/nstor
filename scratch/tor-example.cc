@@ -14,12 +14,14 @@ int main (int argc, char *argv[]) {
     Time simTime = Time("60s");
     uint32_t rtt = 40;
     string flavor = "vanilla";
+    string use_nsc = "false";
 
     CommandLine cmd;
     cmd.AddValue("run", "run number", run);
     cmd.AddValue("rtt", "hop-by-hop rtt in msec", rtt);
     cmd.AddValue("time", "simulation time", simTime);
     cmd.AddValue("flavor", "Tor flavor", flavor);
+    cmd.AddValue("use-nsc", "Enable the NSC network stack (default false)", use_nsc);
     cmd.Parse(argc, argv);
 
     SeedManager::SetSeed (12);
@@ -52,7 +54,10 @@ int main (int argc, char *argv[]) {
         th.SetTorAppType("ns3::TorFairApp");
 
     // th.DisableProxies(true); // make circuits shorter (entry = proxy), thus the simulation faster
-    th.EnableNscStack(true,"cubic"); // enable linux protocol stack and set tcp flavor
+    // nsc parameter to test NSC functionality
+    if(use_nsc == "true") {
+        th.EnableNscStack(true, "cubic"); // enable linux protocol stack and set tcp flavor
+    }
     th.SetRtt(MilliSeconds(rtt)); // set rtt
     // th.EnablePcap(true); // enable pcap logging
     // th.ParseFile ("circuits.dat"); // parse scenario from file

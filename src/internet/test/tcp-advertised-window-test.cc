@@ -23,25 +23,40 @@
 #include "tcp-error-model.h"
 #include "ns3/random-variable-stream.h"
 
-namespace ns3 {
+using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("TcpAdvertisedWindowTestSuite");
 
 /**
+ * \ingroup internet-tests
+ * \ingroup tests
  * \brief Socket that wraps every call to AdvertisedWindowSize ().
  */
 
 class TcpSocketAdvertisedWindowProxy : public TcpSocketMsgBase
 {
 public:
+  /**
+   * \brief Get the type ID.
+   * \return the object TypeId
+   */
   static TypeId GetTypeId (void);
 
+  /** \brief typedef for a cb */
   typedef Callback<void, uint16_t, uint16_t> InvalidAwndCallback;
 
+  /**
+   * \brief Constructor
+   */
   TcpSocketAdvertisedWindowProxy () : TcpSocketMsgBase (), m_segmentSize(0)
   {
   }
 
+  /**
+   * \brief Copy-constructor
+   *
+   * \param other Other obj
+   */
   TcpSocketAdvertisedWindowProxy (const TcpSocketAdvertisedWindowProxy &other)
     : TcpSocketMsgBase (other)
   {
@@ -49,8 +64,18 @@ public:
     m_inwalidAwndCb = other.m_inwalidAwndCb;
   }
 
+  /**
+   * \brief Set the invalid AdvWnd callback
+   *
+   * \param cb callback to set
+   */
   void SetInvalidAwndCb (InvalidAwndCallback cb);
 
+  /**
+   * \brief Set the expected segment size
+   *
+   * \param seg Segment size
+   */
   void SetExpectedSegmentSize (uint16_t seg) { m_segmentSize = seg; };
 
 protected:
@@ -59,7 +84,7 @@ protected:
 
 private:
   uint16_t OldAdvertisedWindowSize (bool scale = true) const;
-  InvalidAwndCallback m_inwalidAwndCb;
+  InvalidAwndCallback m_inwalidAwndCb; //!< Callback
 
   /**
    * \brief Test meta-information: size of the segments that are received.
@@ -147,6 +172,8 @@ TcpSocketAdvertisedWindowProxy::AdvertisedWindowSize (bool scale) const
  * The legacy code used for calculating the advertised window.
  *
  * This was copied from tcp-socket-base.cc before changing the formula.
+ * \param scale true if should scale the window
+ * \return the old adv wnd value
  */
 uint16_t
 TcpSocketAdvertisedWindowProxy::OldAdvertisedWindowSize (bool scale) const
@@ -176,12 +203,23 @@ TcpSocketAdvertisedWindowProxy::OldAdvertisedWindowSize (bool scale) const
 NS_OBJECT_ENSURE_REGISTERED (TcpSocketAdvertisedWindowProxy);
 
 /**
+ * \ingroup internet-tests
+ * \ingroup test
+ *
  * \brief An error model that randomly drops a given rátio of TCP segments.
  */
 class TcpDropRatioErrorModel : public TcpGeneralErrorModel
 {
 public:
+  /**
+   * \brief Get the type ID.
+   * \return the object TypeId
+   */
   static TypeId GetTypeId (void);
+  /**
+   * \brief Constructor
+   * \param dropRatio the drop ratio
+   */
   TcpDropRatioErrorModel (double dropRatio)
     : TcpGeneralErrorModel (), m_dropRatio(dropRatio)
   {
@@ -194,8 +232,8 @@ protected:
 
 private:
   virtual void DoReset (void) { };
-  double m_dropRatio;
-  Ptr<UniformRandomVariable> m_prng;
+  double m_dropRatio; //!< Drop ratio
+  Ptr<UniformRandomVariable> m_prng; //!< Random variable
 };
 
 NS_OBJECT_ENSURE_REGISTERED (TcpDropRatioErrorModel);
@@ -217,6 +255,8 @@ TcpDropRatioErrorModel::ShouldDrop (const Ipv4Header &ipHeader, const TcpHeader 
 }
 
 /**
+ * \ingroup internet-tests
+ * \ingroup test
  * \brief Test the new formula for calculating TCP's advertised window size.
  *
  * In TcpSocketBase, the advertised window is now calculated as
@@ -240,6 +280,13 @@ TcpDropRatioErrorModel::ShouldDrop (const Ipv4Header &ipHeader, const TcpHeader 
 class TcpAdvertisedWindowTest : public TcpGeneralTest
 {
 public:
+  /**
+   * \brief Constructor
+   * \param desc description
+   * \param size segment size
+   * \param packets number of packets to send
+   * \param lossRatio error ratio
+   */
   TcpAdvertisedWindowTest (const std::string &desc, uint32_t size, uint32_t packets, double lossRatio);
 
 protected:
@@ -248,10 +295,14 @@ protected:
   virtual Ptr<ErrorModel> CreateReceiverErrorModel ();
 
 private:
+  /** \brief Callback called for the update of the awnd
+   * \param oldAwnd Old advertised window
+   * \param newAwnd new value
+   */
   void InvalidAwndCb (uint16_t oldAwnd, uint16_t newAwnd);
-  uint32_t m_pktSize;
-  uint32_t m_pktCount;
-  double m_lossRatio;
+  uint32_t m_pktSize; //!< Packet size
+  uint32_t m_pktCount; //!< Pkt count
+  double m_lossRatio; //!< Loss ratio
 };
 
 TcpAdvertisedWindowTest::TcpAdvertisedWindowTest (const std::string &desc,
@@ -302,7 +353,13 @@ TcpAdvertisedWindowTest::InvalidAwndCb (uint16_t oldAwnd, uint16_t newAwnd)
 
 //-----------------------------------------------------------------------------
 
-static class TcpAdvertisedWindowTestSuite : public TestSuite
+/**
+ * \ingroup internet-tests
+ * \ingroup test
+ *
+ * \brief Test Suite for TCP adv window
+ */
+class TcpAdvertisedWindowTestSuite : public TestSuite
 {
 public:
   TcpAdvertisedWindowTestSuite () : TestSuite ("tcp-advertised-window-test", UNIT)
@@ -320,6 +377,7 @@ public:
     AddTestCase (new TcpAdvertisedWindowTest ("TCP advertised window size, complete loss", 1000, 100, 1.0),
                  TestCase::QUICK);
   }
-} g_tcpAdvertisedWindowTestSuite;
+};
 
-} // namespace ns3
+static TcpAdvertisedWindowTestSuite g_tcpAdvertisedWindowTestSuite; //<! static obj for test initialization
+

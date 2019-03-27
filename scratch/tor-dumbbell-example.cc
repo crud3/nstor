@@ -52,7 +52,7 @@ int main (int argc, char *argv[]) {
         th.SetTorAppType("ns3::TorFairApp");
 
     th.DisableProxies(true); // make circuits shorter (entry = proxy), thus the simulation faster
-    th.EnableNscStack(true,"cubic"); // enable linux protocol stack and set tcp flavor
+    //th.EnableNscStack(true,"cubic"); // enable linux protocol stack and set tcp flavor
 
     Ptr<UniformRandomVariable> m_startTime = CreateObject<UniformRandomVariable> ();
     m_startTime->SetAttribute ("Min", DoubleValue (0.1));
