@@ -415,13 +415,15 @@ int main (int argc, char *argv[]) {
         "Queues can only be limited by either bytes or packets, not both.");
     if(queue_max_bytes > 0)
     {
-      Config::SetDefault ("ns3::Queue::Mode", EnumValue (Queue<Packet>::QUEUE_MODE_BYTES));
-      Config::SetDefault ("ns3::Queue::MaxBytes", UintegerValue (queue_max_bytes));
+      // ns3::Queue::MaxBytes was deprecated in 3.29, using MaxSize instead
+      Config::SetDefault ("ns3::QueueBase::MaxSize",
+              QueueSizeValue (QueueSize (QueueSizeUnit::BYTES, queue_max_bytes)));
     }
     else if(queue_max_packets > 0)
     {
-      Config::SetDefault ("ns3::Queue::Mode", EnumValue (Queue<Packet>::QUEUE_MODE_PACKETS));
-      Config::SetDefault ("ns3::Queue::MaxPackets", UintegerValue (queue_max_packets));
+      // ns3::Queue::MaxBytes was deprecated in 3.29, using MaxSize instead
+      Config::SetDefault ("ns3::QueueBase::MaxSize",
+              QueueSizeValue (QueueSize (QueueSizeUnit::PACKETS, queue_max_packets)));
     }
 
   /* TorApp defaults. Note, this also affects onion proxies. */
